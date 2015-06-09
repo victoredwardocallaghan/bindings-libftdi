@@ -49,10 +49,12 @@ test-suite hlint
 --
 library
   -- Modules exported by the library.
-  exposed-modules:     Bindings.Libftdi
-  
+  exposed-modules:     LibFtdi,
+                       LibFtdi.Types,
+                       LibFtdi.Purge,
+                       LibFtdi.EEPROM
   -- Modules included in this library but not exported.
-  -- other-modules:       
+  other-modules:       Bindings.LibFtdi
   
   other-extensions:    ForeignFunctionInterface
   build-depends:       base >=4.7 && <4.8, bindings-DSL >= 1.0.0 && < 1.1

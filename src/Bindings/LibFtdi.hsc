@@ -1,13 +1,14 @@
 #include "bindings.dsl.h"
 #include "ftdi.h"
 
+{-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE ForeignFunctionInterface#-}
+
 -- | <http://libusb.sourceforge.net/api-1.0/group__dev.html>
 
-module Bindings.Libftdi where
-#strict_import
+module Bindings.LibFtdi where
 
-#num FTDI_DEFAULT_EEPROM_SIZE 
+#strict_import
 
 #integral_t enum ftdi_chip_type
 #integral_t enum ftdi_parity_type
@@ -18,6 +19,8 @@ module Bindings.Libftdi where
 #integral_t enum ftdi_mpsse_mode
 
 #integral_t enum ftdi_interface
+
+#integral_t enum ftdi_module_detach_mode
 
 #num MPSSE_WRITE_NEG
 #num MPSSE_BITMODE
@@ -54,8 +57,8 @@ divValue rate | rate > 6000000 = 0
 #num SIO_SET_BAUD_RATE
 #num SIO_SET_DATA
 
-#num FTDI_DEVICE_OUT_REQTYPE
-#num FTDI_DEVICE_IN_REQTYPE
+-- #num FTDI_DEVICE_OUT_REQTYPE
+-- #num FTDI_DEVICE_IN_REQTYPE
 
 #num SIO_RESET_REQUEST
 #num SIO_SET_BAUDRATE_REQUEST
@@ -92,10 +95,20 @@ divValue rate | rate > 6000000 = 0
 
 #pointer FTDI_URB_USERCONTEXT_COOKIE
 
-#opaque_t    usb_dev_handle
+#opaque_t    libusb_device_handle
+
+#starttype struct ftdi_transfer_control
+#field    completed, CUInt
+#field    buf, Ptr CUChar
+#field    size, CUInt
+#field    offset, CUInt
+#field    ftdi, Ptr <ftdi_context>
+-- #field    transfer, Ptr <libusb_transfer>
+#stoptype
 
 #starttype struct ftdi_context
-#field    usb_dev , Ptr <usb_dev_handle>
+-- #field    usb_ctx , Ptr <libusb_context>
+#field    usb_dev , Ptr <libusb_device_handle>
 #field    usb_read_timeout, CInt
 #field    usb_write_timeout, CInt
 #field    type , <ftdi_chip_type>
@@ -106,89 +119,173 @@ divValue rate | rate > 6000000 = 0
 #field    readbuffer_remaining, CUInt
 #field    readbuffer_chunksize, CUInt
 #field    writebuffer_chunksize, CUInt
+#field    max_packet_size, CUInt
+#field    interface, CInt
+#field    index, CInt
 #field    in_ep, CInt
-#field    bitbang_mode , CUChar 
-#field    eeprom_size, CInt
+#field    out_ep, CInt
+#field    bitbang_mode , CUChar
+-- #field    eeprom, Ptr <ftdi_eeprom>
 #field    error_str, Ptr CChar
-#field    async_usb_buffer , Ptr CChar
-#field    async_usb_buffer_size, CUInt
-#stoptype 
+#field    module_detach_mode, <ftdi_module_detach_mode>
+#stoptype
 
-#opaque_t    usb_device
+#integral_t enum ftdi_eeprom_value
+
+#opaque_t    libusb_device
 
 #starttype struct ftdi_device_list
 #field    next , Ptr <ftdi_device_list>
-#field    dev , Ptr <usb_device>
+#field    dev , Ptr <libusb_device>
 #stoptype
 
-#starttype struct ftdi_eeprom
-#field    vendor_id , CInt
-#field    product_id , CInt
-#field    self_powered , CInt
-#field    remote_wakeup , CInt
-#field    BM_type_chip , CInt
-#field    in_is_isochronous , CInt
-#field    out_is_isochronous , CInt
-#field    suspend_pull_downs , CInt
-#field    use_serial , CInt
-#field    change_usb_version , CInt
-#field    usb_version , CInt
-#field    max_power , CInt
-#field    manufacturer , Ptr CChar
-#field    product , Ptr CChar
-#field    serial , Ptr CChar
-#field    size , CInt
+#num FT1284_CLK_IDLE_STATE
+#num FT1284_DATA_LSB
+#num FT1284_FLOW_CONTROL
+#num POWER_SAVE_DISABLE_H
+
+#num USE_SERIAL_NUM
+
+#integral_t enum ftdi_cbus_func
+
+#num INVERT_TXD
+#num INVERT_RXD
+#num INVERT_RTS
+#num INVERT_CTS
+#num INVERT_DTR
+#num INVERT_DSR
+#num INVERT_DCD
+#num INVERT_RI
+
+#num CHANNEL_IS_UART
+#num CHANNEL_IS_FIFO
+#num CHANNEL_IS_OPTO
+#num CHANNEL_IS_CPU
+#num CHANNEL_IS_FT1284
+
+#num CHANNEL_IS_RS485
+
+#num DRIVE_4MA
+#num DRIVE_8MA
+#num DRIVE_12MA
+#num DRIVE_16MA
+#num SLOW_SLEW
+#num IS_SCHMITT
+
+#num DRIVER_VCP
+#num DRIVER_VCPH
+
+#num USE_USB_VERSION_BIT
+
+#num SUSPEND_DBUS7_BIT
+
+#num HIGH_CURRENT_DRIVE
+#num HIGH_CURRENT_DRIVE_R
+
+-- XXX
+
+#starttype struct ftdi_version_info
+#field    major, CInt
+#field    minor, CInt
+#field    micro, CInt
+#field    version_str, Ptr CChar
+#field    snapshot_str, Ptr CChar
 #stoptype
+
+-- #starttype struct ftdi_eeprom
+-- #field    vendor_id , CInt
+-- #field    product_id , CInt
+-- #field    self_powered , CInt
+-- #field    remote_wakeup , CInt
+-- #field    BM_type_chip , CInt
+-- #field    in_is_isochronous , CInt
+-- #field    out_is_isochronous , CInt
+-- #field    suspend_pull_downs , CInt
+-- #field    use_serial , CInt
+-- #field    change_usb_version , CInt
+-- #field    usb_version , CInt
+-- #field    max_power , CInt
+-- #field    manufacturer , Ptr CChar
+-- #field    product , Ptr CChar
+-- #field    serial , Ptr CChar
+-- #field    size , CInt
+-- #stoptype
 
 #ccall    ftdi_init , Ptr <ftdi_context> -> IO CInt
 #ccall    ftdi_new , IO ( Ptr <ftdi_context> )
 #ccall    ftdi_set_interface , Ptr <ftdi_context> -> <ftdi_interface> -> IO CInt
+
 #ccall    ftdi_deinit , Ptr <ftdi_context> -> IO ()
 #ccall    ftdi_free , Ptr <ftdi_context> -> IO ()
-#ccall    ftdi_set_usbdev , Ptr <ftdi_context> -> Ptr <usb_dev_handle> -> IO ()
+#ccall    ftdi_set_usbdev , Ptr <ftdi_context> -> Ptr <libusb_device_handle> -> IO ()
+
+-- #ccall    ftdi_get_library_version, IO <ftdi_version_info>
+
 #ccall    ftdi_usb_find_all , Ptr <ftdi_context> -> Ptr (Ptr <ftdi_device_list>) -> CInt -> CInt -> IO CInt
 #ccall    ftdi_list_free , Ptr (Ptr <ftdi_device_list>) -> IO ()
 #ccall    ftdi_list_free2 , Ptr <ftdi_device_list> -> IO ()
-#ccall    ftdi_usb_get_strings , Ptr <ftdi_context> -> Ptr <usb_device> -> Ptr CChar -> CInt -> Ptr CChar -> CInt -> Ptr CChar -> CInt -> IO CInt
+#ccall    ftdi_usb_get_strings , Ptr <ftdi_context> -> Ptr <libusb_device> -> Ptr CChar -> CInt -> Ptr CChar -> CInt -> Ptr CChar -> CInt -> IO CInt
+#ccall    ftdi_eeprom_set_strings , Ptr <ftdi_context> -> Ptr CChar -> Ptr CChar -> Ptr CChar -> IO CInt
+
 #ccall    ftdi_usb_open , Ptr <ftdi_context> -> CInt -> CInt -> IO CInt
 #ccall    ftdi_usb_open_desc , Ptr <ftdi_context> -> CInt -> CInt -> Ptr CChar -> Ptr CChar -> IO CInt
-#ccall    ftdi_usb_open_dev , Ptr <ftdi_context> -> Ptr <usb_device> -> IO CInt
+#ccall    ftdi_usb_open_dev , Ptr <ftdi_context> -> Ptr <libusb_device> -> IO CInt
+
 #ccall    ftdi_usb_close , Ptr <ftdi_context> -> IO CInt
 #ccall    ftdi_usb_reset , Ptr <ftdi_context> -> IO CInt
 #ccall    ftdi_usb_purge_rx_buffer , Ptr <ftdi_context> -> IO CInt
 #ccall    ftdi_usb_purge_tx_buffer , Ptr <ftdi_context> -> IO CInt
 #ccall    ftdi_usb_purge_buffers , Ptr <ftdi_context> -> IO CInt
+
 #ccall    ftdi_set_baudrate , Ptr <ftdi_context> -> CInt -> IO CInt
 #ccall    ftdi_set_line_property , Ptr <ftdi_context> -> <ftdi_bits_type> -> <ftdi_stopbits_type> -> <ftdi_parity_type> -> IO CInt
 #ccall    ftdi_set_line_property2 , Ptr <ftdi_context> -> <ftdi_bits_type> -> <ftdi_stopbits_type> -> <ftdi_parity_type> -> <ftdi_break_type> -> IO CInt
+
 #ccall    ftdi_read_data , Ptr <ftdi_context> -> Ptr CUChar -> CInt -> IO CInt
 #ccall    ftdi_read_data_set_chunksize , Ptr <ftdi_context> -> CUInt -> IO CInt
 #ccall    ftdi_read_data_get_chunksize , Ptr <ftdi_context> -> Ptr CUInt -> IO CInt
+
 #ccall    ftdi_write_data , Ptr <ftdi_context> -> Ptr CUChar -> CUInt -> IO CInt
 #ccall    ftdi_write_data_set_chunksize , Ptr <ftdi_context> -> CUInt -> IO CInt
 #ccall    ftdi_write_data_get_chunksize , Ptr <ftdi_context> -> Ptr CUInt -> IO CInt
+
 #ccall    ftdi_write_data_async , Ptr <ftdi_context> -> Ptr CUChar -> CInt -> IO CInt
 #ccall    ftdi_async_complete , Ptr <ftdi_context> -> CInt -> IO ()
 #ccall    ftdi_enable_bitbang , Ptr <ftdi_context> -> CUChar -> IO CInt
-#ccall    ftdi_disable_bitbang , Ptr <ftdi_context> -> IO CInt
+
 #ccall    ftdi_set_bitmode , Ptr <ftdi_context> -> CUChar -> CUChar -> IO CInt
+#ccall    ftdi_disable_bitbang , Ptr <ftdi_context> -> IO CInt
 #ccall    ftdi_read_pins , Ptr <ftdi_context> -> CUChar -> IO CInt
+
 #ccall    ftdi_set_latency_timer , Ptr <ftdi_context> -> CUChar -> IO CInt
 #ccall    ftdi_get_latency_timer , Ptr <ftdi_context> -> Ptr CUChar -> IO CInt
+
 #ccall    ftdi_poll_modem_status , Ptr <ftdi_context> -> Ptr CShort -> IO CInt
+
 #ccall    ftdi_setflowctrl , Ptr <ftdi_context> -> CInt -> IO CInt
 #ccall    ftdi_setdtr_rts , Ptr <ftdi_context> -> CInt -> CInt -> IO CInt
 #ccall    ftdi_setdtr , Ptr <ftdi_context> -> CInt -> IO CInt
 #ccall    ftdi_setrts , Ptr <ftdi_context> -> CInt -> IO CInt
+
 #ccall    ftdi_set_event_char , Ptr <ftdi_context> -> CUChar -> CUChar -> IO CInt
 #ccall    ftdi_set_error_char , Ptr <ftdi_context> -> CUChar -> CUChar -> IO CInt
-#ccall    ftdi_eeprom_setsize , Ptr <ftdi_context> -> Ptr <ftdi_eeprom> -> CInt -> IO ()
-#ccall    ftdi_eeprom_initdefaults , Ptr <ftdi_eeprom> -> IO ()
-#ccall    ftdi_eeprom_build , Ptr <ftdi_eeprom> -> Ptr CUChar -> IO CInt
-#ccall    ftdi_eeprom_decode , Ptr <ftdi_eeprom> -> Ptr CUChar -> CInt -> IO CInt
-#ccall    ftdi_read_eeprom , Ptr <ftdi_context> -> Ptr CUChar -> IO CInt
+
+#ccall    ftdi_eeprom_initdefaults , Ptr <ftdi_context> -> Ptr CChar -> Ptr CChar -> Ptr CChar -> IO CInt
+#ccall    ftdi_eeprom_build , Ptr <ftdi_context> -> IO CInt
+#ccall    ftdi_eeprom_decode , Ptr <ftdi_context> -> CInt -> IO CInt
+
+#ccall    ftdi_get_eeprom_value, Ptr <ftdi_context> -> <ftdi_eeprom_value> -> Ptr CInt -> IO CInt
+#ccall    ftdi_set_eeprom_value, Ptr <ftdi_context> -> <ftdi_eeprom_value> -> CInt -> IO CInt
+
+#ccall    ftdi_get_eeprom_buf, Ptr <ftdi_context> -> Ptr CUChar -> CInt -> IO CInt
+#ccall    ftdi_set_eeprom_buf, Ptr <ftdi_context> -> Ptr CUChar -> CInt -> IO CInt
+
+#ccall    ftdi_read_eeprom , Ptr <ftdi_context> -> IO CInt
 #ccall    ftdi_read_chipid , Ptr <ftdi_context> -> Ptr CUInt -> IO CInt
-#ccall    ftdi_read_eeprom_getsize , Ptr <ftdi_context> -> Ptr CUChar -> CInt -> IO CInt
-#ccall    ftdi_write_eeprom , Ptr <ftdi_context> -> Ptr CUChar -> IO CInt
+#ccall    ftdi_write_eeprom , Ptr <ftdi_context> -> IO CInt
 #ccall    ftdi_erase_eeprom , Ptr <ftdi_context> -> IO CInt
+
+#ccall    ftdi_read_eeprom_location  , Ptr <ftdi_context> -> CInt -> Ptr CUShort -> IO CInt
+#ccall    ftdi_write_eeprom_location , Ptr <ftdi_context> -> CInt -> CUShort -> IO CInt
+
 #ccall    ftdi_get_error_string , Ptr <ftdi_context> -> IO (Ptr CChar)
