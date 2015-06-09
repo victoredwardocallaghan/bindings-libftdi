@@ -13,6 +13,8 @@
 {-# OPTIONS_HADDOCK prune #-}
 
 module LibFtdi.EEPROM ( ftdiReadChipID
+                      , ftdiGetEEPROMValue
+                      , ftdiSetEEPROMValue
                       , ftdiReadEEPROMLocation
                       , ftdiReadEEPROM
                       , ftdiWriteEEPROMLocation
@@ -44,6 +46,10 @@ data FtdiEEPROMError = FTDI_ERR_EEPROM_READ      -- ^ Read failed
                      | FTDI_ERR_EEPROM_INVACCESS -- ^ Invalid access to checksum protected area below 0x80
                      | FTDI_ERR_EEPROM_PROTECTED -- ^ Device can't access unprotected area
                      | FTDI_ERR_EEPROM_TYPFAILED -- ^ Reading chip type failed
+                     | FTDI_ERR_EEPROM_VAL_EXIST -- ^ Value doesn't exist
+                     | FTDI_ERR_EEPROM_VAL_SEL   -- ^ Value not user settable
+                     | FTDI_ERR_EEPROM_VAL_MISS  -- ^ struct ftdi_contxt or ftdi_eeprom missing
+                     | FTDI_ERR_EEPROM_VAL_ROOM  -- ^ Not enough room to store eeprom
                       deriving (Eq, Typeable)
 
 instance Show FtdiEEPROMError where
@@ -54,8 +60,36 @@ instance Show FtdiEEPROMError where
   show FTDI_ERR_EEPROM_INVACCESS = "Invalid access to checksum protected area below 0x80"
   show FTDI_ERR_EEPROM_PROTECTED = "Device can't access unprotected area"
   show FTDI_ERR_EEPROM_TYPFAILED = "Reading chip type failed"
+  show FTDI_ERR_EEPROM_VAL_EXIST = "Value doesn't exist"
+  show FTDI_ERR_EEPROM_VAL_SEL   = "Value not user settable"
+  show FTDI_ERR_EEPROM_VAL_MISS  = "struct ftdi_contxt or ftdi_eeprom missing"
+  show FTDI_ERR_EEPROM_VAL_ROOM  = "Not enough room to store eeprom"
 
 instance Exception FtdiEEPROMError
+
+-- | Get the read-only buffer to the binary EEPROM content.
+ftdiGetEEPROMValue :: DeviceHandle
+                   -> C'ftdi_eeprom_value -- FtdiEEPROMValue
+                   -> IO (Either FtdiEEPROMError Int)
+ftdiGetEEPROMValue d n = alloca $ \ptr -> do
+  r <- c'ftdi_get_eeprom_value (unDeviceHandle d) n ptr
+  case r of
+    (0)  -> do val <- peek ptr
+               return $ Right (fromIntegral val)
+    (-1) -> return $ Left FTDI_ERR_EEPROM_VAL_MISS
+    (-2) -> return $ Left FTDI_ERR_EEPROM_VAL_ROOM
+
+-- | Set a value in the decoded EEPROM Structure No parameter checking is performed.
+ftdiSetEEPROMValue :: DeviceHandle
+                   -> C'ftdi_eeprom_value -- FtdiEEPROMValue
+                   -> Int
+                   -> IO (Either FtdiEEPROMError ())
+ftdiSetEEPROMValue d n v = do
+  r <- c'ftdi_set_eeprom_value (unDeviceHandle d) n (fromIntegral v)
+  case r of
+    (0)  -> return $ Right ()
+    (-1) -> return $ Left FTDI_ERR_EEPROM_VAL_EXIST
+    (-2) -> return $ Left FTDI_ERR_EEPROM_VAL_SEL
 
 -- | Read EEPROM Location
 ftdiReadEEPROMLocation :: DeviceHandle
@@ -123,4 +157,4 @@ ftdiEraseEEPROM d = do
 ftdiGetErrorString :: DeviceHandle -> IO String
 ftdiGetErrorString d = do
   pstr <- c'ftdi_get_error_string $ unDeviceHandle d
-  (peekCString pstr) >>= return
+  peekCString pstr
