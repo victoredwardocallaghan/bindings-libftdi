@@ -230,6 +230,7 @@ divValue rate | rate > 6000000 = 0
 #ccall    ftdi_usb_open , Ptr <ftdi_context> -> CInt -> CInt -> IO CInt
 #ccall    ftdi_usb_open_desc , Ptr <ftdi_context> -> CInt -> CInt -> Ptr CChar -> Ptr CChar -> IO CInt
 #ccall    ftdi_usb_open_dev , Ptr <ftdi_context> -> Ptr <libusb_device> -> IO CInt
+#ccall    ftdi_usb_open_string , Ptr <ftdi_context> -> CString -> IO CInt
 
 #ccall    ftdi_usb_close , Ptr <ftdi_context> -> IO CInt
 #ccall    ftdi_usb_reset , Ptr <ftdi_context> -> IO CInt
@@ -251,7 +252,7 @@ divValue rate | rate > 6000000 = 0
 
 #ccall    ftdi_set_bitmode , Ptr <ftdi_context> -> CUChar -> CUChar -> IO CInt
 #ccall    ftdi_disable_bitbang , Ptr <ftdi_context> -> IO CInt
-#ccall    ftdi_read_pins , Ptr <ftdi_context> -> CUChar -> IO CInt
+#ccall    ftdi_read_pins , Ptr <ftdi_context> -> Ptr CUChar -> IO CInt
 
 #ccall    ftdi_set_latency_timer , Ptr <ftdi_context> -> CUChar -> IO CInt
 #ccall    ftdi_get_latency_timer , Ptr <ftdi_context> -> Ptr CUChar -> IO CInt
