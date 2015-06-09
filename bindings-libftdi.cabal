@@ -53,6 +53,7 @@ library
   exposed-modules:     LibFtdi,
                        LibFtdi.LibFtdi,
                        LibFtdi.Types,
+                       LibFtdi.Misc,
                        LibFtdi.Purge,
                        LibFtdi.EEPROM
   -- Modules included in this library but not exported.

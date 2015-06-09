@@ -16,5 +16,6 @@ module LibFtdi (module X) where
 
 import LibFtdi.LibFtdi as X
 import LibFtdi.Types as X
+import LibFtdi.Misc as X
 import LibFtdi.Purge as X
 import LibFtdi.EEPROM as X
