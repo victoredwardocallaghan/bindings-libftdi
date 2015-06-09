@@ -23,6 +23,11 @@ module LibFtdi.LibFtdi ( withFtdi
                        , FtdiReturnType(..)
                        , ftdiErrorValue
                        , ftdiErrorTy
+                       , ftdiSetInterface
+		       , ftdiUSBOpen
+                       , ftdiUSBOpenString
+		       , ftdiUSBClose
+                       , ftdiUSBReset
                        ) where
 
 import Foreign
@@ -34,6 +39,8 @@ import Control.Exception
 import Data.Typeable (Typeable, cast)
 import Data.Maybe
 import Data.Tuple
+
+import LibFtdi.Types
 
 import Bindings.LibFtdi
 
@@ -92,30 +99,61 @@ withFtdi  = bracket openFtdi closeFtdi
 -- | Handy helper to wrap around Either results
 openFtdi :: IO DeviceHandle
 openFtdi = do
-  r <- openFtdi'
+  r <- ftdiInit
   case r of
     Left e -> throwIO e
-    Right dev -> return dev
+    Right dev -> do ftdiSetInterface dev INTERFACE_ANY
+                    ftdiUSBOpen dev (0x0403, 0x6010)    -- XXX
+                    return dev
 
--- Open specified device using a device identifier string.
-openFtdi' :: IO (FtdiReturnType DeviceHandle)
-openFtdi' = do
+-- | ..
+ftdiInit :: IO (FtdiReturnType DeviceHandle)
+ftdiInit = do
   ptr <- c'ftdi_new
   ret <- c'ftdi_init ptr
   if ret /= 0 then return $ (Left . toEnum . fromIntegral) ret
   else return (Right (DeviceHandle ptr))
 
+-- | ..
+ftdiDeInit :: DeviceHandle -> IO ()
+ftdiDeInit d = do
+  _ <- c'ftdi_deinit (unDeviceHandle d)
+  return () -- XXX ignores errors
+
+-- | ..
+ftdiSetInterface :: DeviceHandle -> FtdiInterface -> IO ()
+ftdiSetInterface d i = do
+  _ <- c'ftdi_set_interface (unDeviceHandle d) ((fromIntegral . fromEnum) i)
+  return () -- XXX ignores errors
+
+-- | ..
+ftdiUSBOpen :: DeviceHandle -> (VendorID, ProductID)-> IO ()
+ftdiUSBOpen d (vid, pid) = do
+  _ <- c'ftdi_usb_open (unDeviceHandle d) (fromIntegral vid) (fromIntegral pid)
+  return () -- XXX ignores errors
+
+-- | Open specified device using a device identifier string, e.g. "i:0x0403:0x6010"
+ftdiUSBOpenString :: DeviceHandle -> String -> IO ()
+ftdiUSBOpenString d s = withCString s $ \str -> do
+  _ <- c'ftdi_usb_open_string (unDeviceHandle d) str
+  return () -- XXX ignores errors
+
+-- | ..
+ftdiUSBClose :: DeviceHandle -> IO ()
+ftdiUSBClose d = do
+  _ <- c'ftdi_usb_close (unDeviceHandle d)
+  return () -- XXX ignores errors
+
 -- | Close device. Deallocates the memory allocated by openFtdi when called.
 closeFtdi :: DeviceHandle -> IO ()
 closeFtdi d = do
-  c'ftdi_usb_close ftdic
-  c'ftdi_deinit    ftdic
-  where ftdic = unDeviceHandle d
+  ftdiUSBClose d
+  ftdiDeInit d
 
 -- | Resets the ftdi device.
 -- XXX fix error handling
-usbReset :: DeviceHandle -> IO ()
-usbReset d = do
+ftdiUSBReset :: DeviceHandle -> IO ()
+ftdiUSBReset d = do
   r <- c'ftdi_usb_reset $ unDeviceHandle d
   case r of
     (0)  -> return ()
