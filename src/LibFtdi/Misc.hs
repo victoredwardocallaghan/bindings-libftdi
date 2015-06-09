@@ -27,9 +27,10 @@ import Data.Typeable (Typeable, cast)
 import Data.Maybe
 import Data.Tuple
 
-import LibFtdi.Types
-
 import Bindings.LibFtdi
+
+import LibFtdi.LibFtdi
+import LibFtdi.Types
 
 -- | ..
 ftdiSetBitMode :: DeviceHandle
@@ -40,8 +41,6 @@ ftdiSetBitMode d mask mode = do
   _ <- c'ftdi_set_bitmode (unDeviceHandle d) (fromIntegral mask) (fromIntegral mode)
   return () -- XXX ignores errors
 
-ftdiReadPins
-ftdiDisableBitBang
 -- | ..
 ftdiDisableBitBang :: DeviceHandle -> IO ()
 ftdiDisableBitBang d = do
@@ -51,7 +50,7 @@ ftdiDisableBitBang d = do
 -- | ..
 ftdiReadPins :: DeviceHandle
              -> IO Int
-ftdiReadPins d = alloc $ \ptr -> do
+ftdiReadPins d = alloca $ \ptr -> do
   _ <- c'ftdi_read_pins (unDeviceHandle d) ptr
   pins <- peek ptr
-  return pins -- XXX ignores errors
+  return $ fromIntegral pins -- XXX ignores errors
