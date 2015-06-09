@@ -13,6 +13,8 @@
 {-# OPTIONS_HADDOCK prune #-}
 
 module LibFtdi.EEPROM ( ftdiReadChipID
+                      , ftdiBuildEEPROM
+                      , ftdiDecodeEEPROM
                       , ftdiGetEEPROMValue
                       , ftdiSetEEPROMValue
                       , ftdiReadEEPROMLocation
@@ -66,6 +68,23 @@ instance Show FtdiEEPROMError where
   show FTDI_ERR_EEPROM_VAL_ROOM  = "Not enough room to store eeprom"
 
 instance Exception FtdiEEPROMError
+
+-- | ..
+ftdiBuildEEPROM :: DeviceHandle
+                -> IO (Either FtdiEEPROMError ())
+ftdiBuildEEPROM d = do
+  r <- c'ftdi_eeprom_build (unDeviceHandle d)
+  case r of
+    (0)  -> return $ Right ()
+
+-- | ..
+ftdiDecodeEEPROM :: DeviceHandle
+                 -> Bool
+                 -> IO (Either FtdiEEPROMError ())
+ftdiDecodeEEPROM d v = do
+  r <- c'ftdi_eeprom_decode (unDeviceHandle d) ((fromIntegral . fromEnum) v)
+  case r of
+    (0)  -> return $ Right ()
 
 -- | Get the read-only buffer to the binary EEPROM content.
 ftdiGetEEPROMValue :: DeviceHandle
