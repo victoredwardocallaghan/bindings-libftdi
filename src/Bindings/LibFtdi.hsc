@@ -249,10 +249,6 @@ divValue rate | rate > 6000000 = 0
 #ccall    ftdi_write_data_set_chunksize , Ptr <ftdi_context> -> CUInt -> IO CInt
 #ccall    ftdi_write_data_get_chunksize , Ptr <ftdi_context> -> Ptr CUInt -> IO CInt
 
-#ccall    ftdi_write_data_async , Ptr <ftdi_context> -> Ptr CUChar -> CInt -> IO CInt
-#ccall    ftdi_async_complete , Ptr <ftdi_context> -> CInt -> IO ()
-#ccall    ftdi_enable_bitbang , Ptr <ftdi_context> -> CUChar -> IO CInt
-
 #ccall    ftdi_set_bitmode , Ptr <ftdi_context> -> CUChar -> CUChar -> IO CInt
 #ccall    ftdi_disable_bitbang , Ptr <ftdi_context> -> IO CInt
 #ccall    ftdi_read_pins , Ptr <ftdi_context> -> CUChar -> IO CInt
