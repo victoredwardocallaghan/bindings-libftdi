@@ -12,10 +12,10 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# OPTIONS_HADDOCK prune #-}
 
-module LibFtdi.Misc ( ftdiSetBitMode
-                    , ftdiReadPins
-                    , ftdiDisableBitBang
-                    ) where
+module LibFtdi.BitBang ( ftdiSetBitMode
+                       , ftdiReadPins
+                       , ftdiDisableBitBang
+                       ) where
 
 import Foreign
 import Foreign.C.Types

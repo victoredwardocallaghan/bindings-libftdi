@@ -53,7 +53,7 @@ library
   exposed-modules:     LibFtdi,
                        LibFtdi.LibFtdi,
                        LibFtdi.Types,
-                       LibFtdi.Misc,
+                       LibFtdi.BitBang,
                        LibFtdi.Data,
                        LibFtdi.Purge,
                        LibFtdi.EEPROM
