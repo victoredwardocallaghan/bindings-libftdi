@@ -54,13 +54,14 @@ library
                        LibFtdi.LibFtdi,
                        LibFtdi.Types,
                        LibFtdi.Misc,
+                       LibFtdi.Data,
                        LibFtdi.Purge,
                        LibFtdi.EEPROM
   -- Modules included in this library but not exported.
   other-modules:       Bindings.LibFtdi
   
   other-extensions:    ForeignFunctionInterface
-  build-depends:       base >=4.7 && <4.8, bindings-DSL >= 1.0.0 && < 1.1
+  build-depends:       base >=4.7 && <4.8, bindings-DSL >= 1.0.0 && < 1.1, bytestring
   hs-source-dirs:      src
   
   -- Extra tools (e.g. alex, hsc2hs, ...) needed to build the source.
