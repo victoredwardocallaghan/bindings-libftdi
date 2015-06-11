@@ -16,6 +16,8 @@
 {-# OPTIONS_HADDOCK prune #-}
 
 module LibFtdi.LibFtdi ( withFtdi
+		       , ftdiInit
+		       , ftdiDeInit
                        , DeviceHandle(..)
                        , VendorID(..)
                        , ProductID(..)

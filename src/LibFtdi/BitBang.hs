@@ -9,7 +9,6 @@
   This module encapsulates the ... libftdi functions
 -}
 
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# OPTIONS_HADDOCK prune #-}
 
 module LibFtdi.BitBang ( ftdiSetBitMode
@@ -34,11 +33,11 @@ import LibFtdi.Types
 
 -- | Enable/disable bitbang modes.
 ftdiSetBitMode :: DeviceHandle
-               -> Int -- ^ Bitmask to configure lines. HIGH/ON value configures a line as output.
-               -> Int -- ^ Bitbang mode: use the values defined in ftdi_mpsse_mode
+               -> Int           -- ^ Bitmask to configure lines. HIGH/ON value configures a line as output.
+               -> FtdiMPSSEMode -- ^ Bitbang mode: use the values defined in ftdi_mpsse_mode
                -> IO ()
 ftdiSetBitMode d mask mode = do
-  r <- c'ftdi_set_bitmode (unDeviceHandle d) (fromIntegral mask) (fromIntegral mode)
+  r <- c'ftdi_set_bitmode (unDeviceHandle d) (fromIntegral mask) ((fromIntegral . fromEnum) mode)
 --  -1	can't enable bitbang mode
 --  -2	USB device unavailable
   return () -- XXX ignores errors

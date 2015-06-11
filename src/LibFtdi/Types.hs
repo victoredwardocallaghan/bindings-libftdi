@@ -15,6 +15,7 @@ module LibFtdi.Types ( FtdiChipType(..)
                      , FtdiStopBitsType(..)
                      , FtdiBitsType(..)
                      , FtdiBreakType(..)
+                     , FtdiMPSSEMode(..)
                      , FtdiInterface(..)
                      , FtdiModuleDetactMode(..)
 		     , FtdiEEPROMValue(..)
@@ -87,17 +88,28 @@ data FtdiBreakType = BreakOff
 		    deriving (Eq, Enum)
 
 -- | MPSSE bitbang modes
--- enum ftdi_mpsse_mode
---     BITMODE_RESET  = 0x00,    /**< switch off bitbang mode, back to regular serial/FIFO
---     BITMODE_BITBANG= 0x01,    /**< classical asynchronous bitbang mode, introduced with B-type chips
---     BITMODE_MPSSE  = 0x02,    /**< MPSSE mode, available on 2232x chips
---     BITMODE_SYNCBB = 0x04,    /**< synchronous bitbang mode, available on 2232x and R-type chips
---     BITMODE_MCU    = 0x08,    /**< MCU Host Bus Emulation mode, available on 2232x chips
---     /* CPU-style fifo mode gets set via EEPROM
---     BITMODE_OPTO   = 0x10,    /**< Fast Opto-Isolated Serial Interface Mode, available on 2232x chips
---     BITMODE_CBUS   = 0x20,    /**< Bitbang on CBUS pins of R-type chips, configure in EEPROM before
---     BITMODE_SYNCFF = 0x40,    /**< Single Channel Synchronous FIFO mode, available on 2232H chips
---     BITMODE_FT1284 = 0x80,    /**< FT1284 mode, available on 232H chips
+data FtdiMPSSEMode = BITMODE_RESET   -- ^ switch off bitbang mode, back to regular serial/FIFO
+                   | BITMODE_BITBANG -- ^ classical asynchronous bitbang mode, introduced with B-type chips
+                   | BITMODE_MPSSE   -- ^ MPSSE mode, available on 2232x chips
+                   | BITMODE_SYNCBB  -- ^ synchronous bitbang mode, available on 2232x and R-type chips
+                   | BITMODE_MCU     -- ^ MCU Host Bus Emulation mode, available on 2232x chips
+-- CPU-style fifo mode gets set via EEPROM
+                   | BITMODE_OPTO    -- ^ Fast Opto-Isolated Serial Interface Mode, available on 2232x chips
+                   | BITMODE_CBUS    -- ^ Bitbang on CBUS pins of R-type chips, configure in EEPROM before
+                   | BITMODE_SYNCFF  -- ^ Single Channel Synchronous FIFO mode, available on 2232H chips
+                   | BITMODE_FT1284  -- ^ FT1284 mode, available on 232H chips
+                    deriving Eq
+
+instance Enum FtdiMPSSEMode where
+  fromEnum BITMODE_RESET   = 0x00
+  fromEnum BITMODE_BITBANG = 0x01
+  fromEnum BITMODE_MPSSE   = 0x02
+  fromEnum BITMODE_SYNCBB  = 0x04
+  fromEnum BITMODE_MCU     = 0x08
+  fromEnum BITMODE_OPTO    = 0x10
+  fromEnum BITMODE_CBUS    = 0x20
+  fromEnum BITMODE_SYNCFF  = 0x40
+  fromEnum BITMODE_FT1284  = 0x80
 
 -- | Port interface for chips with multiple interfaces
 data FtdiInterface = INTERFACE_ANY
